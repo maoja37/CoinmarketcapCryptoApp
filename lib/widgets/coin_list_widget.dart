@@ -143,7 +143,7 @@ class CoinListWidget extends StatelessWidget {
                                                     return data.value;
                                                   }),
                                             ],
-                                          )),
+                                          ),),
                                     ),
                                     Container(
                                         padding: EdgeInsets.all(4),

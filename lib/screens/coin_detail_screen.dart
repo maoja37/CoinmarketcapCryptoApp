@@ -4,10 +4,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:crypto_coinmarket_api_app/models/charts_data.dart';
 import 'package:crypto_coinmarket_api_app/models/data_model.dart';
 import 'package:crypto_coinmarket_api_app/widgets/sliver_widget.dart';
+import 'package:crypto_coinmarket_api_app/widgets/toggle_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'dart:math';
+
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 class CoinDetailScreen extends StatefulWidget {
   final DataModel coin;
@@ -18,6 +21,7 @@ class CoinDetailScreen extends StatefulWidget {
 }
 
 class _CoinDetailScreenState extends State<CoinDetailScreen> {
+  List<bool> _isSelected = [true, false, false, false, false];
   @override
   Widget build(BuildContext context) {
     var coinIconUrl =
@@ -110,21 +114,98 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
                     padding: EdgeInsets.only(top: 32),
                     child: Column(children: [
                       Text(
-                        widget.coin.quoteModel.usdModel.prices.toStringAsFixed(2),
+                        '\$' +
+                            widget.coin.quoteModel.usdModel.prices
+                                .toStringAsFixed(2),
                         style: Theme.of(context).textTheme.headline4,
-
                       ),
                       Text(
                         outPutDate,
-                        style: TextStyle(fontFamily: "Roboto", fontSize: 18.0, color: Colors.grey),
-                        
+                        style: TextStyle(
+                            fontFamily: "Roboto",
+                            fontSize: 18.0,
+                            color: Colors.grey),
+                      ),
+                      Expanded(
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  padding: EdgeInsets.only(left: 16),
+                                  height: 96,
+                                  width: double.infinity,
+                                  child: SfCartesianChart(
+                                    plotAreaBorderWidth: 0,
+                                    primaryXAxis:
+                                        CategoryAxis(isVisible: false),
+                                    primaryYAxis:
+                                        CategoryAxis(isVisible: false),
+                                    legend: Legend(isVisible: false),
+                                    tooltipBehavior:
+                                        TooltipBehavior(enable: false),
+                                    series: <ChartSeries<ChartData, String>>[
+                                      LineSeries<ChartData, String>(
+                                          dataSource: data,
+                                          xValueMapper: (ChartData data, _) =>
+                                              data.year.toString(),
+                                          yValueMapper: (ChartData data, _) {
+                                            return data.value;
+                                          }),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ]),
+                      ),
+                      SizedBox(height: 8.0),
+                      ToggleButtons(
+                        borderRadius: BorderRadius.circular(8),
+                        borderColor: Colors.indigoAccent,
+                        color: Colors.white,
+                        fillColor: Colors.green,
+                        selectedColor: Colors.white,
+                        selectedBorderColor: Colors.indigoAccent,
+                        children: [
+                          ToggleButton(name: 'Today'),
+                          ToggleButton(name: '1W '),
+                          ToggleButton(name: '1M'),
+                          ToggleButton(name: '3M'),
+                          ToggleButton(name: '6M'),
+                        ],
+                        isSelected: _isSelected,
+                        onPressed: (int newIndex) {
+                          setState(() {
+                            for (int i = 0; i < _isSelected.length; i++) {
+                              if (i == newIndex) {
+                                _isSelected[i] = true;
+                              } else {
+                                _isSelected[i] = false;
+                              }
+                              print(_isSelected);
+                            }
+                          });
+                        },
                       )
                     ]),
                   )),
             ),
-            SliverFillRemaining(
-              child: Column(),
-            )
+            SliverToBoxAdapter(
+                child: Container(
+              height: 400,
+              width: double.infinity,
+              child: Column(children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [ 
+                    Text('Circulating Supply: ', 
+                    style: Theme.of(context).textTheme.subtitle1),
+                    Text(widget.coin.circulatingSupply.toString(), style: Theme.of(context).textTheme.subtitle1   )
+                   ],
+                )
+              ]),
+            )),
+            //  SliverFillRemaining()
           ],
         ));
   }
